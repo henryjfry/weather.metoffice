@@ -21,6 +21,7 @@ import sys
 import time
 import json
 
+
 weather_time = xbmcgui.Window(10000).getProperty("weather_time")
 
 window_id = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"GUI.GetProperties","params":{"properties":["currentwindow", "currentcontrol"]},"id":1}')
@@ -29,10 +30,12 @@ window_id = json.loads(window_id)
 if 'Weather' in str(window_id):
 	weather_time = 'True'
 
-if weather_time != 'True':
+if weather_time == 'False':
 	exit()
 
-if xbmc.getCondVisibility("System.ScreenSaverActive"):
+screen_saver = xbmc.getCondVisibility("System.ScreenSaverActive")
+
+if str(screen_saver) == str('True'):
 	xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id": 1, "method": "Input.Select"}')
 
 import socket
