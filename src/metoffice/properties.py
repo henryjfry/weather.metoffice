@@ -87,9 +87,6 @@ def observation():
         else:
             WINDOW.setProperty('Current.OutlookIcon', '%s' % WEATHER_CODES[latest_obs.get('W', 'na')][0])#@UndefinedVariable
             WINDOW.setProperty('Current.FanartCode', '%s' % WEATHER_CODES[latest_obs.get('W','na')][0])#@UndefinedVariable
-        #import xbmc
-        #xbmc.log(str(latest_obs)+'===>PHIL', level=xbmc.LOGFATAL)
-        #xbmc.log(str(humidity)+'===>PHIL', level=xbmc.LOGFATAL)
         try:
             WINDOW.setProperty('Current.DewPoint', str(dew_point))#@UndefinedVariable
         except:
@@ -204,8 +201,7 @@ def threehourly():
                 my_time = datetime.strftime(datetime.now(), '%H:%m')
                 curr_time = utilities.minutes_as_time(int(rep.get('$')))
                 curr_date = time.strftime(SHORT_DATE_FORMAT, time.strptime(period.get('value'), DATAPOINT_DATE_FORMAT))
-                #xbmc.log(str(my_date == curr_date)+'===>PHIL', level=xbmc.LOGFATAL)
-                #xbmc.log(str(my_time > curr_time)+'===>PHIL', level=xbmc.LOGFATAL)
+
                 if my_date == curr_date and my_time > curr_time:
                     humidity = rep.get('H', 'na')
                     uv_index = rep.get('U', 'na')
@@ -237,12 +233,12 @@ def threehourly():
         e.args = ("Key Error in JSON File", "Key '{0}' not found while processing file from url:".format(e.args[0]), THREEHOURLY_LOCATION_FORECAST_URL)
         raise
     import xbmc
-    #xbmc.log(str(rep)+'===>PHIL', level=xbmc.LOGFATAL)
-    xbmc.log(str(curr_date2) + ' '+str(curr_time2)+'WEATHER===>PHIL', level=xbmc.LOGFATAL)
+
+    xbmc.log(str(curr_date2) + ' '+str(curr_time2)+'WEATHER===>WEATHER', level=xbmc.LOGFATAL)
     WINDOW.setProperty('Current.Humidity', str(humidity))
-    #xbmc.log(str(feels_like1)+'===>PHIL', level=xbmc.LOGFATAL)
+
     WINDOW.setProperty('Current.FeelsLike', str(feels_like1))
-    #xbmc.log(str(str(uv_index))+'===>PHIL', level=xbmc.LOGFATAL)
+
     WINDOW.setProperty('Current.DewPoint', str(dew_point))
     WINDOW.setProperty('Current.UVIndex', str(uv_index))
     WINDOW.setProperty('Hourly.IsFetched', 'true')#@UndefinedVariable

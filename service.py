@@ -37,8 +37,6 @@ class CronJobMonitor(Thread):
         currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         parentdir = str(Path(os.path.dirname(currentdir) + '/weather.metoffice/src'))
         sys.path.insert(0,parentdir) 
-        #xbmc.log(str(currentdir)+'===>PHIL', level=xbmc.LOGFATAL)
-        #xbmc.log(str(parentdir)+'===>PHIL', level=xbmc.LOGFATAL)
         # insert at 1, 0 is the script path (or '' in REPL)
         import pytz
         from metoffice import default
@@ -55,45 +53,15 @@ class CronJobMonitor(Thread):
         if self.xbmc_monitor.abortRequested():
             del self.xbmc_monitor
             return
-        """
-        first_run_flag = False
-        weather_time = xbmcgui.Window(10000).getProperty("weather_time")
 
-        if str(weather_time) == '':
-            first_run_flag = True
-            xbmc.log(str('weather.metoffice_SLEEP')+'===>PHIL', level=xbmc.LOGFATAL)
-            time.sleep(4)
-        """
 
-        #import datetime
-        #from datetime import datetime
-
-        curr_time = time.time()
         curr_time = datetime.datetime.now().replace(minute=0,second=0, microsecond=0).timestamp()
-        """
-        weather_time = xbmcgui.Window(10000).getProperty("weather_time")
-        xbmc.log(str(curr_time)+'curr_time===>PHIL', level=xbmc.LOGINFO)
-        xbmc.log(str(weather_time)+'weather_timecurr_time===>PHIL', level=xbmc.LOGINFO)
-        if str(weather_time) == '':
-            curr_time = datetime.datetime.now().replace(minute=0,second=0, microsecond=0).timestamp()
-            xbmcgui.Window(10000).setProperty("weather_time", str(curr_time))
-        elif curr_time > float(weather_time) + 60*60:
-            curr_time = datetime.datetime.now().replace(minute=0,second=0, microsecond=0).timestamp()
-            xbmcgui.Window(10000).setProperty("weather_time", str(curr_time))
-        else:
-            #exit()
-            print('DO NOT EXIT')
-        """
         xbmcgui.Window(10000).setProperty("weather_time", str('True'))
         self.weather()
         xbmcgui.Window(10000).setProperty("weather_time", str('False'))
         self.next_time = float(curr_time) + 60*60
-        #if first_run_flag == True:
-        #    time.sleep(2.5)
-        #    xbmc.log(str('weather.metoffice_SLEEP')+'===>PHIL', level=xbmc.LOGFATAL)
 
-
-        xbmc.log(str('CronJobMonitor_STARTED_WEATHER')+'===>___OPEN_INFO', level=xbmc.LOGINFO)
+        xbmc.log(str('CronJobMonitor_STARTED_WEATHER')+'===>___WEATHER', level=xbmc.LOGINFO)
         while not self.xbmc_monitor.abortRequested() and not self.exit and self.poll_time:
             self.curr_time = datetime.datetime.now().replace(minute=0,second=0, microsecond=0).timestamp()
             if int(time.time()) > self.next_time:  # Scheduled time has past so lets update
@@ -103,10 +71,9 @@ class CronJobMonitor(Thread):
                 self.weather()
                 xbmcgui.Window(10000).setProperty("weather_time", str('False'))
             if self.next_time - int(time.time()) < 3540:
-                self.poll_time = int(self.next_time - int(time.time())) + 10
+                self.poll_time = int(self.next_time - int(time.time())) + 2
             else:
-                self.poll_time = 70
-            #xbmc.log(str(self.poll_time)+'self.poll_time)===>PHIL', level=xbmc.LOGINFO)
+                self.poll_time = 62
             self.xbmc_monitor.waitForAbort(self.poll_time)
 
         del self.xbmc_monitor
@@ -114,7 +81,6 @@ class CronJobMonitor(Thread):
 
 class ServiceMonitor(object):
     def __init__(self):
-        xbmc.log(str('ServiceMonitor_diamond_info_service_started')+'===>___OPEN_INFO', level=xbmc.LOGINFO)
         xbmc.executebuiltin('Dialog.Close(busydialognocancel)')
         xbmc.executebuiltin('Dialog.Close(busydialog)')
         self.exit = False
@@ -157,7 +123,7 @@ class ServiceMonitor(object):
         self._on_exit()
 
     def run(self):
-        xbmc.log(str('waether_service_started')+'===>___OPEN_INFO', level=xbmc.LOGINFO)
+        xbmc.log(str('weather_service_started')+'===>___weather_service_started', level=xbmc.LOGINFO)
         ServiceStarted = 'True'
         self.cron_job.start()
         self.poller()

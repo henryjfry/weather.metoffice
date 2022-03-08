@@ -21,8 +21,6 @@ import sys
 import time
 import json
 
-
-first_run_flag = False
 weather_time = xbmcgui.Window(10000).getProperty("weather_time")
 
 window_id = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"GUI.GetProperties","params":{"properties":["currentwindow", "currentcontrol"]},"id":1}')
@@ -31,44 +29,12 @@ window_id = json.loads(window_id)
 if 'Weather' in str(window_id):
 	weather_time = 'True'
 
-"""
-if str(weather_time) == '':
-    first_run_flag = True
-    xbmc.log(str('weather.metoffice_SLEEP')+'===>PHIL', level=xbmc.LOGFATAL)
-    time.sleep(4)
-
-
-import datetime
-from datetime import datetime
-
-
-
-curr_time = time.time()
-weather_time = xbmcgui.Window(10000).getProperty("weather_time")
-#xbmc.log(str(curr_time)+'curr_time===>PHIL', level=xbmc.LOGINFO)
-#xbmc.log(str(weather_time)+'weather_timecurr_time===>PHIL', level=xbmc.LOGINFO)
-if str(weather_time) == '':
-    curr_time = datetime.now().replace(minute=0,second=0, microsecond=0).timestamp()
-    xbmcgui.Window(10000).setProperty("weather_time", str(curr_time))
-elif curr_time > float(weather_time) + 60*60:
-    curr_time = datetime.now().replace(minute=0,second=0, microsecond=0).timestamp()
-    xbmcgui.Window(10000).setProperty("weather_time", str(curr_time))
-else:
-    xbmc.log(str(window_id)+'window_id_WEATHER===>PHIL', level=xbmc.LOGINFO)
-    exit()
-    #print('DO NOT EXIT')
-
-
-if first_run_flag == True:
-    time.sleep(2.5)
-    xbmc.log(str('weather.metoffice_SLEEP')+'===>PHIL', level=xbmc.LOGFATAL)
-"""
 if weather_time != 'True':
-	#xbmc.log(str(window_id)+'_WEATHER_window_id===>PHIL', level=xbmc.LOGINFO)
 	exit()
 
+if xbmc.getCondVisibility("System.ScreenSaverActive"):
+	xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id": 1, "method": "Input.Select"}')
 
-xbmc.executebuiltin('Dialog.Close(Screensaver)')
 import socket
 socket.setdefaulttimeout(20)
 try:
@@ -82,8 +48,6 @@ except:
         currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         parentdir = os.path.dirname(currentdir) + '/weather.metoffice/src'
         sys.path.insert(0,parentdir) 
-        #xbmc.log(str(currentdir)+'===>PHIL', level=xbmc.LOGFATAL)
-        #xbmc.log(str(parentdir)+'===>PHIL', level=xbmc.LOGFATAL)
         # insert at 1, 0 is the script path (or '' in REPL)
         import pytz
         from metoffice import default
