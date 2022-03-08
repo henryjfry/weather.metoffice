@@ -1,17 +1,24 @@
-# A basic way of caching files associated with URLs
+#A basic way of caching files associated with URLs
 
 from datetime import datetime
 import os
-import urllib2
+try:
+    import urllib2
+except:
+    import urllib
+    from urllib.request import urlopen
 import tempfile
 import json
 import socket
 import shutil
 
-import utilities
+
+try:
+    import utilities
+except:
+    from metoffice import utilities
 
 throwaway = utilities.strptime('20170101', '%Y%m%d')
-
 
 class URLCache(object):
     TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
@@ -26,7 +33,7 @@ class URLCache(object):
         try:
             fyle = open(self._file, 'r')
         except IOError:
-            # create the file and try again.
+            #create the file and try again.
             open(self._file, 'a').close()
             fyle = open(self._file, 'r')
         try:
@@ -50,10 +57,14 @@ class URLCache(object):
 
     def flush(self):
         flushlist = list()
-        for url, entry in self._cache.iteritems():
-            if not os.path.isfile(entry['resource']) or \
-                    utilities.strptime(entry['expiry'], self.TIME_FORMAT) < datetime.utcnow():
-                flushlist.append(url)
+        try:
+            for url, entry in self._cache.iteritems():
+                if not os.path.isfile(entry['resource']) or utilities.strptime(entry['expiry'], self.TIME_FORMAT) < datetime.utcnow():
+                        flushlist.append(url)
+        except:
+            for url, entry in self._cache.items():
+                if not os.path.isfile(entry['resource']) or utilities.strptime(entry['expiry'], self.TIME_FORMAT) < datetime.utcnow():
+                        flushlist.append(url)
         for url in flushlist:
             self.remove(url)
 
@@ -66,31 +77,48 @@ class URLCache(object):
         Checks to see if an item is in cache
         """
         try:
-            entry = self._cache[url]
-            if not os.path.isfile(entry['resource']) or \
-                    utilities.strptime(entry['expiry'], self.TIME_FORMAT) < datetime.utcnow():
-                raise InvalidCacheError
-            else:
-                return entry['resource']
-        except (KeyError, InvalidCacheError):
-            # (src, headers) = urllib.urlretrieve(url)
             try:
-                req = urllib2.Request(url, None, {'User-Agent': 'Mozilla/5.0'})
-                response = urllib2.urlopen(req)
-            except (socket.timeout, urllib2.URLError) as e:
-                e.args = (str(e), url)
-                raise
-            page = response.read()
-            response.close()
-            tmp = tempfile.NamedTemporaryFile(dir=self._folder, delete=False)
-            tmp.write(page)
-            tmp.close()
-            expiry = expiry_callback(tmp.name)
-            if resource_callback:
-                resource_callback(tmp.name)
-            self._cache[url] = {'resource': tmp.name, 'expiry': expiry.strftime(self.TIME_FORMAT)}
-            return tmp.name
-
+                entry = self._cache[url]
+                if not os.path.isfile(entry['resource']) or utilities.strptime(entry['expiry'], self.TIME_FORMAT) < datetime.utcnow():
+                    raise InvalidCacheError
+                else:
+                    return entry['resource']
+            except (KeyError, InvalidCacheError):
+                #(src, headers) = urllib.urlretrieve(url)
+                try:
+                    try:
+                        req = urllib2.Request(url, None, {'User-Agent' : 'Mozilla/5.0'})
+                        response = urllib2.urlopen(req)
+                    except (socket.timeout, urllib2.URLError) as e:
+                        e.args = (str(e), url)
+                        raise
+                except:
+                    try:
+                        req = urllib.request.Request(url, None, {'User-Agent' : 'Mozilla/5.0'})
+                        response = urlopen(req)
+                    except (socket.timeout, urllib.error.URLError) as e:
+                        e.args = (str(e), url)
+                        raise
+                page = response.read()
+                response.close()
+                tmp = tempfile.NamedTemporaryFile(dir=self._folder, delete=False)
+                tmp.write(page)
+                tmp.close()
+                expiry = expiry_callback(tmp.name)
+                if resource_callback:
+                    resource_callback(tmp.name)
+                self._cache[url] = {'resource': tmp.name, 'expiry': expiry.strftime(self.TIME_FORMAT)}
+                return tmp.name
+        except:
+            try:
+                raise InvalidCacheError
+            except:
+                import xbmc
+                try: xbmc.log(str(InvalidCacheError)+'InvalidCacheError_/home/osmc/.kodi/addons/weather.metoffice/src/metoffice/urlcache.py===>PHIL', level=xbmc.LOGINFO)
+                except: xbmc.log(str('InvalidCacheError')+'InvalidCacheError_/home/osmc/.kodi/addons/weather.metoffice/src/metoffice/urlcache.py===>PHIL', level=xbmc.LOGINFO)
+                entry = {}
+                entry['resource'] = ''
+                return entry['resource']
 
 class InvalidCacheError(Exception):
     pass
