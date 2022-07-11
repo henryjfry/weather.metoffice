@@ -16,11 +16,51 @@
 # *  http://www.gnu.org/copyleft/gpl.html
 
 import xbmc
+import xbmcvfs
 import xbmcgui
+import xbmcaddon
 import sys
 import time
 import json
 
+if 'info=' in str(sys.argv):
+	if 'setup_settings_xml' in str(sys.argv[1]):
+		import xml.etree.cElementTree as ET
+		import requests
+		response = requests.get('http://api.geoiplookup.net/')
+		tree = ET.fromstring(response.text)
+		tree = ET.ElementTree(tree)
+		root = tree.getroot()
+		for child in root:
+			for result in child:
+					for i in result:
+						if i.tag == 'longitude':
+							longitude = float(i.text)
+						if i.tag == 'latitude':
+							latitude = float(i.text)
+
+		#latitude1 = xbmcgui.Dialog().input(heading='Latitude (Before Decimal Point)', type=xbmcgui.INPUT_NUMERIC)
+		#latitude2 = xbmcgui.Dialog().input(heading='Latitude (After D.P) = %s.xxx' % (str(latitude1)), type=xbmcgui.INPUT_NUMERIC)
+		#lat_sign = xbmcgui.Dialog().yesno('Positive/Negative Latitude', 'Positive/Negative', nolabel='+ve' ,yeslabel='-ve')
+		#latitude = float(str(latitude1) + '.' + str(latitude2))
+		#if not lat_sign:
+		#	latitude = latitude * -1
+		#longitude1 = xbmcgui.Dialog().input(heading='Longitude (Before Decimal Point)', type=xbmcgui.INPUT_NUMERIC)
+		#longitude2 = xbmcgui.Dialog().input(heading='Longitude (After D.P) = %s.xxx' % (str(longitude1)), type=xbmcgui.INPUT_NUMERIC)
+		#long_sign = xbmcgui.Dialog().yesno('Positive/Negative Longitude', 'Positive/Negative', nolabel='+ve' ,yeslabel='-ve')
+		#longitude = float(str(longitude1) + '.' + str(longitude2))
+		#if not long_sign:
+		#	longitude = longitude * -1
+
+		import setup_xml
+		ADDON = xbmcaddon.Addon(id="weather.metoffice")
+		#https://register.metoffice.gov.uk/MyAccountClient/account/view
+		API_KEY = ADDON.getSetting('ApiKey')
+		xml_path = xbmcvfs.translatePath("special://profile/addon_data/"+'weather.metoffice/settings.xml')
+		return_var = setup_xml.setup_xml(api_key=API_KEY, latitude=latitude,longitude=longitude,xml_path=xml_path)
+		#xbmc.log(str(return_var)+'_weather.metoffice===>setup_settings_xml', level=xbmc.LOGINFO)
+		ADDON.setSetting('ApiKey', API_KEY)
+		weather_time = 'False'
 
 weather_time = xbmcgui.Window(10000).getProperty("weather_time")
 
@@ -28,15 +68,10 @@ window_id = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"GUI.GetProperties","
 window_id = json.loads(window_id)
 
 if 'Weather' in str(window_id):
-	weather_time = 'True'
+    weather_time = 'True'
 
 if weather_time == 'False':
-	exit()
-
-screen_saver = xbmc.getCondVisibility("System.ScreenSaverActive")
-
-if str(screen_saver) == str('True'):
-	xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id": 1, "method": "Input.Select"}')
+    exit()
 
 import socket
 socket.setdefaulttimeout(20)
@@ -70,6 +105,11 @@ except:
 
 @utilities.failgracefully
 def main():
+    screen_saver = xbmc.getCondVisibility("System.ScreenSaverActive")
+    if str(screen_saver) == str('True'):
+        xbmc.executebuiltin('ActivateWindow(%s)' % xbmcgui.getCurrentWindowId())
+        xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id": 1, "method": "Input.Select"}')
+
     if ADDON.getSetting('EraseCache') == 'true':
         try:
             urlcache.URLCache(ADDON_DATA_PATH).erase()
@@ -101,4 +141,4 @@ def main():
     WINDOW.setProperty('Weather.CurrentView', '')#@UndefinedVariable
 
 if __name__ == '__main__':
-    main()
+	main()
