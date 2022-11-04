@@ -169,6 +169,20 @@ def threehourly():
     with urlcache.URLCache(ADDON_DATA_PATH) as cache:
         filename = cache.get(THREEHOURLY_LOCATION_FORECAST_URL, threehourly_expiry)
         data=json.load(open(filename))
+        count = 0
+        try:
+            dv = data['SiteRep']['DV']['Location']['Period']
+        except:
+            dv= None
+        while dv ==None and count < 10:
+            data = requests.get(THREEHOURLY_LOCATION_FORECAST_URL).json()
+            try:
+                dv = data['SiteRep']['DV']['Location']['Period']
+            except:
+                dv= None
+            time.sleep(1)
+
+
     try:
         dv = data['SiteRep']['DV']
         dataDate = utilities.strptime(dv.get('dataDate').rstrip('Z'), DATAPOINT_DATETIME_FORMAT).replace(tzinfo=pytz.utc)
