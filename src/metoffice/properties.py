@@ -181,6 +181,7 @@ def threehourly():
             except:
                 dv= None
             time.sleep(1)
+            count = count + 1
 
 
     try:
