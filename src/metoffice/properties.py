@@ -42,8 +42,12 @@ from PIL import Image
 global humidity
 humidity = 0
 
-import xbmc
+import xbmc, xbmcgui
 SKIN_DIR = xbmc.getSkinDir()
+
+weather_time = xbmcgui.Window(10000).getProperty("weather_time")
+if weather_time != str('True'):
+    exit
 
 @utilities.panelbusy('LeftPane')
 def observation():
